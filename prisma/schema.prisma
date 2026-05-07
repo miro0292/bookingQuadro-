@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String   @unique
+  image     String?
+  role      String   @default("guest")
+  listings  Listing[] @relation("OwnerListings")
+  bookings  Booking[]
+  reviews   Review[] @relation("AuthorReviews")
+  createdAt DateTime @default(now())
+}
+
+model Listing {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  address     String
+  city        String
+  price       Int
+  ownerId     Int
+  owner       User     @relation(fields: [ownerId], references: [id], name: "OwnerListings")
+  images      Image[]
+  bookings    Booking[]
+  reviews     Review[]
+  createdAt   DateTime @default(now())
+}
+
+model Image {
+  id        Int     @id @default(autoincrement())
+  path      String
+  listingId Int
+  listing   Listing @relation(fields: [listingId], references: [id])
+}
+
+model Booking {
+  id         Int      @id @default(autoincrement())
+  listingId  Int
+  userId     Int
+  startDate  DateTime
+  endDate    DateTime
+  total      Int
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  rating     Int
+  comment    String?
+  listingId  Int?
+  authorId   Int
+  author     User     @relation(fields: [authorId], references: [id], name: "AuthorReviews")
+  listing    Listing? @relation(fields: [listingId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  name     String?
+}

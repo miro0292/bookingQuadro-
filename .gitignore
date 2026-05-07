@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# environment variables — nunca subir al repositorio
+.env
+.env.local
+.env.production
+
+# database local
+prisma/dev.db
+prisma/dev.db-journal
+
+# logs
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

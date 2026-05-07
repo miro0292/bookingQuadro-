@@ -1,0 +1,23 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "file:/data/dev.db"
+      NEXTAUTH_SECRET: "replace_with_a_random_secret"
+      NEXTAUTH_URL: "http://localhost:3000"
+      GOOGLE_CLIENT_ID: "your_google_client_id"
+      GOOGLE_CLIENT_SECRET: "your_google_client_secret"
+      STRIPE_SECRET_KEY: "sk_test_..."
+      STRIPE_PUBLISHABLE_KEY: "pk_test_..."
+      GOOGLE_MAPS_API_KEY: "your_google_maps_api_key"
+      RUN_SEED_ON_START: "false"
+    volumes:
+      - booking-data:/data
+    restart: unless-stopped
+
+volumes:
+  booking-data:
