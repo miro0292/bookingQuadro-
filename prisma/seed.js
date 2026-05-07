@@ -1,136 +1,190 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const fs = require('fs')
+
+function randomPrice() {
+  const options = [110000, 115000, 120000, 125000, 130000, 135000, 140000, 145000, 150000]
+  return options[Math.floor(Math.random() * options.length)]
+}
+
+function addDays(date, days) {
+  const d = new Date(date)
+  d.setDate(d.getDate() + days)
+  return d
+}
+
+const images = [
+  ['/listings/list1.png', '/listings/list2.png'],
+  ['/listings/list2.png', '/listings/list3.png'],
+  ['/listings/list3.png', '/listings/list4.png'],
+  ['/listings/list4.png', '/listings/list1.png'],
+  ['/listings/list1.png', '/listings/list3.png'],
+  ['/listings/list2.png', '/listings/list4.png'],
+  ['/listings/list1.png', '/listings/list2.png', '/listings/list3.png'],
+  ['/listings/list2.png', '/listings/list3.png', '/listings/list4.png'],
+  ['/listings/list3.png', '/listings/list4.png', '/listings/list1.png'],
+  ['/listings/list4.png', '/listings/list1.png', '/listings/list2.png'],
+  ['/listings/list1.png', '/listings/list4.png'],
+  ['/listings/list2.png', '/listings/list1.png'],
+]
+
+const listingsData = [
+  {
+    title: 'Apartamento Quadro 101',
+    description: 'Espacioso apartamento en primer piso con acceso directo a zonas comunes. Ideal para estadías cortas y ejecutivas. Cuenta con cocina equipada, WiFi de alta velocidad y espacio de trabajo.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 1',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 102',
+    description: 'Unidad acogedora con excelente iluminación natural. Perfecta para trabajo remoto, con escritorio dedicado y conexión estable. A pasos del coworking y la cafetería del edificio.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 1',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 201',
+    description: 'Apartamento moderno en segundo piso con vista al jardín interior. Acabados contemporáneos, baño completo y cocina funcional. Acceso a gimnasio y terraza panorámica incluido.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 2',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 202',
+    description: 'Ambiente tranquilo y minimalista ideal para descanso. Ropa de cama premium, blackout total y sistema de climatización. Ubicado lejos de las áreas de tráfico del edificio.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 2',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 301',
+    description: 'Unidad premium en tercer piso con acabados de lujo. Cocina tipo loft, baño con ducha tipo lluvia y sala con sofá cama. Excelente para parejas o viajeros de negocios.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 3',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 302',
+    description: 'Amplio y funcional con doble ventanería para mayor aislamiento. Escritorio ejecutivo, silla ergonómica y pantalla adicional disponible. WiFi simétrico de 300 Mbps.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 3',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 401',
+    description: 'Estudio inteligente con distribución optimizada. Cama murphy integrada que libera espacio durante el día. Sistema de domótica básico para control de luces y temperatura.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 4',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 402',
+    description: 'Apartamento de esquina con dos ventanas y vista parcial a la ciudad. Decoración neutra y elegante. Incluye estacionamiento en el sótano del edificio sin costo adicional.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 4',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 501',
+    description: 'Piso intermedio con acceso directo al living social del edificio. Ideal para grupos pequeños o familias. Cocina completa con electrodomésticos de última generación.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 5',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 502',
+    description: 'Cálido y bien ventilado, con orientación norte para luz constante. Ropa de cama incluida y servicio de lavandería comunal disponible las 24 horas.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 5',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 601 — Superior',
+    description: 'Nuestra unidad superior en sexto piso con la mejor vista del edificio. Sala independiente, dormitorio doble y baño con bañera. La opción más cómoda para estadías largas.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 6',
+    city: 'Bogotá',
+  },
+  {
+    title: 'Apartamento Quadro 602 — Superior',
+    description: 'Segunda unidad superior con distribución espejo. Terraza privada de 4m² con sillas y mesa. Acceso prioritario a todos los amenities del edificio. Experiencia Quadro completa.',
+    address: 'Edificio Quadro Smartliving, Carrera 33 # 25B-45, Piso 6',
+    city: 'Bogotá',
+  },
+]
 
 async function main() {
-  // Reset listing-related demo data to keep seed deterministic.
+  // Limpiar datos existentes
   await prisma.booking.deleteMany({})
   await prisma.review.deleteMany({})
   await prisma.image.deleteMany({})
   await prisma.listing.deleteMany({})
 
-  // Create two users (host and guest)
+  // Crear usuarios
   const host = await prisma.user.upsert({
     where: { email: 'host@quadro.local' },
     update: {},
-    create: {
-      email: 'host@quadro.local',
-      name: 'Quadro Host',
-      role: 'host'
-    }
+    create: { email: 'host@quadro.local', name: 'Quadro Host', role: 'host' }
   })
 
   const guest = await prisma.user.upsert({
     where: { email: 'guest@quadro.local' },
     update: {},
-    create: {
-      email: 'guest@quadro.local',
-      name: 'Demo Guest',
-      role: 'guest'
-    }
+    create: { email: 'guest@quadro.local', name: 'Demo Guest', role: 'guest' }
   })
 
-  const listingsData = [
-    {
-      title: 'Apartamento Quadro 101',
-      description: 'Agradable apartamento en Edificio Quadro Smartliving',
-      address: 'Edificio Quadro Smartliving, carrera 33 bus 25b-45',
-      city: 'Bogotá',
-      price: 120000,
-      images: ['list1.png','list2.png']
-    },
-    {
-      title: 'Apartamento Quadro 102',
-      description: 'Cómodo y cerca de servicios',
-      address: 'Edificio Quadro Smartliving, carrera 33 bus 25b-45',
-      city: 'Bogotá',
-      price: 95000,
-      images: ['list3.png','list4.png']
-    },
-    {
-      title: 'Apartamento Quadro 103',
-      description: 'Habitacion moderna con excelente iluminacion natural.',
-      address: 'Edificio Quadro Smartliving, carrera 33 bus 25b-45',
-      city: 'Bogotá',
-      price: 98000,
-      images: ['list1.png','list3.png']
-    },
-    {
-      title: 'Apartamento Quadro 104',
-      description: 'Espacio funcional para estancias cortas y ejecutivas.',
-      address: 'Edificio Quadro Smartliving, carrera 33 bus 25b-45',
-      city: 'Bogotá',
-      price: 102000,
-      images: ['list2.png','list4.png']
-    },
-    {
-      title: 'Apartamento Quadro 105',
-      description: 'Ambiente tranquilo con diseno contemporaneo.',
-      address: 'Edificio Quadro Smartliving, carrera 33 bus 25b-45',
-      city: 'Bogotá',
-      price: 108000,
-      images: ['list3.png','list1.png']
-    },
-    {
-      title: 'Apartamento Quadro 106',
-      description: 'Unidad premium con acabados sobrios y elegantes.',
-      address: 'Edificio Quadro Smartliving, carrera 33 bus 25b-45',
-      city: 'Bogotá',
-      price: 115000,
-      images: ['list4.png','list2.png']
-    },
-    {
-      title: 'Apartamento Quadro 107',
-      description: 'Ideal para trabajo remoto, comodo y bien ubicado.',
-      address: 'Edificio Quadro Smartliving, carrera 33 bus 25b-45',
-      city: 'Bogotá',
-      price: 99000,
-      images: ['list1.png','list4.png']
-    },
-    {
-      title: 'Apartamento Quadro 108',
-      description: 'Estadia confortable en el corazon de la ciudad.',
-      address: 'Edificio Quadro Smartliving, carrera 33 bus 25b-45',
-      city: 'Bogotá',
-      price: 105000,
-      images: ['list2.png','list3.png']
-    }
-  ]
+  const today = new Date()
 
-  for (const item of listingsData) {
+  for (let i = 0; i < listingsData.length; i++) {
+    const item = listingsData[i]
+    const price = randomPrice()
+
     const listing = await prisma.listing.create({
       data: {
         title: item.title,
         description: item.description,
         address: item.address,
         city: item.city,
-        price: item.price,
+        price,
         owner: { connect: { id: host.id } }
       }
     })
 
-    for (const img of item.images) {
-      await prisma.image.create({ data: { path: `/listings/${img}`, listingId: listing.id } })
+    // Imágenes rotadas
+    for (const imgPath of images[i % images.length]) {
+      await prisma.image.create({ data: { path: imgPath, listingId: listing.id } })
     }
 
-    const offsetDays = listing.id % 5
-    const start = new Date()
-    start.setDate(start.getDate() + 4 + offsetDays)
-    const end = new Date(start)
-    end.setDate(start.getDate() + 3)
-
+    // Reserva pasada (ya ocurrió)
+    const pastStart = addDays(today, -(20 + i * 3))
+    const pastEnd = addDays(pastStart, 3 + (i % 3))
     await prisma.booking.create({
       data: {
         listingId: listing.id,
         userId: guest.id,
-        startDate: start,
-        endDate: end,
-        total: item.price * 3
+        startDate: pastStart,
+        endDate: pastEnd,
+        total: price * (3 + (i % 3))
+      }
+    })
+
+    // Reserva próxima 1 (dentro de pocos días)
+    const soon1Start = addDays(today, 3 + i * 2)
+    const soon1End = addDays(soon1Start, 2 + (i % 4))
+    await prisma.booking.create({
+      data: {
+        listingId: listing.id,
+        userId: guest.id,
+        startDate: soon1Start,
+        endDate: soon1End,
+        total: price * (2 + (i % 4))
+      }
+    })
+
+    // Reserva próxima 2 (en 3-4 semanas)
+    const soon2Start = addDays(today, 25 + i * 2)
+    const soon2End = addDays(soon2Start, 4 + (i % 3))
+    await prisma.booking.create({
+      data: {
+        listingId: listing.id,
+        userId: guest.id,
+        startDate: soon2Start,
+        endDate: soon2End,
+        total: price * (4 + (i % 3))
       }
     })
   }
 
-  console.log('Seed completed')
+  console.log(`Seed completado: ${listingsData.length} apartamentos creados con reservas pasadas y futuras.`)
 }
 
 main()
