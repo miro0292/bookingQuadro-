@@ -3,11 +3,11 @@ import { SessionProvider } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 
 export default function App({ Component, pageProps: { session, ...pageProps } }) {
-  const [theme, setTheme] = useState('light')
+  const [theme, setTheme] = useState('dark')
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem('theme')
-    const initialTheme = savedTheme === 'dark' ? 'dark' : 'light'
+    const initialTheme = savedTheme === 'light' ? 'light' : 'dark'
     setTheme(initialTheme)
   }, [])
 
